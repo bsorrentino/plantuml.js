@@ -12,17 +12,18 @@
   <body>
     <img src="loading.png" id="plantuml-diagram" />
     <script type="text/javascript">
+
         plantuml.initialize('/app/plantuml.js/01-basic/node_modules/@sakirtemel/plantuml.js').then(() => {
-            const element = document.getElementById('plantuml-diagram')
-            const pumlContent = `
-                @startuml
-                Bob -> Alice: Hello!
-                @enduml
-            `
+          console.log( 'initialized!' )
+        })
+
+        function _render( text ) {
+          const element = document.getElementById('plantuml-diagram')
+            const pumlContent = `${text}`
             const url = plantuml.renderPng(pumlContent).then((blob) => {
                 element.src = window.URL.createObjectURL(blob)
             })
-        })
+        }
     </script>
   </body>
 </html>
