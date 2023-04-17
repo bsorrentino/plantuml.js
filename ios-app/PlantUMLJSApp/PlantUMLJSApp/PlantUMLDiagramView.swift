@@ -41,16 +41,32 @@ struct PlantUMLDiagramView: UIViewRepresentable {
     
     var url: URL?
  
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+    
+    
     func makeUIView(context: Context) -> WKWebView {
         
         let webView = WKWebView()
+        webView.navigationDelegate = context.coordinator
         
+        // [Load local web files & resources in WKWebView](https://stackoverflow.com/a/49638654/521197)
         state.subscribe( onUpdate: { request in
-            webView.load(request)
+            
+            if let url = request.url, url.scheme == "file" {
+            
+//                loadHTMLString(webView, from: url)
+                loadFile(webView, from: url)
+            }
+            else {
+                webView.load(request)
+            }
         })
                 
         return webView
     }
+
  
     func updateUIView(_ webView: WKWebView, context: Context) {
         guard let url = url else {
@@ -62,6 +78,69 @@ struct PlantUMLDiagramView: UIViewRepresentable {
     }
 }
 
+extension PlantUMLDiagramView {
+    
+    class Coordinator : NSObject, WKNavigationDelegate {
+        
+        func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse,
+                     decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+
+            print( Self.self, #function)
+            decisionHandler(.allow)
+        }
+    }
+}
+
+extension PlantUMLDiagramView {
+    
+    fileprivate func loadFile( _ webView:WKWebView, from url: URL? ) {
+        guard let url, url.scheme == "file" else { return }
+        
+        let folderURL = url.deletingLastPathComponent()
+        webView.loadFileURL(url, allowingReadAccessTo: folderURL)
+    }
+
+    fileprivate func loadHTMLString( _ webView:WKWebView, from url: URL? ) {
+        guard let url, url.scheme == "file" else { return }
+            
+        let folderURL = url.deletingLastPathComponent()
+        
+        print( "folderURL:\(folderURL)\nfolderPath:\(folderURL.relativePath)")
+        
+        let indexHtml =
+        """
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>PlantUML.js Basic Example</title>
+        <!-- Require cheerpj dependency -->
+        <script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
+        <!-- Require PlantUML.js -->
+        <script src="node_modules/@sakirtemel/plantuml.js/plantuml.js"></script>
+        </head>
+        <body>
+        <img src="loading.png" id="plantuml-diagram" />
+        <script type="text/javascript">
+            plantuml.initialize('/app/\(folderURL.relativePath)/node_modules/@sakirtemel/plantuml.js').then(() => {
+                const element = document.getElementById('plantuml-diagram')
+                const pumlContent = `
+                    @startuml
+                    Bob -> Alice: Hello!
+                    @enduml
+                `
+                const url = plantuml.renderPng(pumlContent).then((blob) => {
+                    element.src = window.URL.createObjectURL(blob)
+                })
+            })
+        </script>
+        </body>
+        </html>
+        """
+        webView.loadHTMLString(indexHtml, baseURL: folderURL)
+
+}
 //struct PlantUMLScrollableDiagramView : View {
 //
 //    var url: URL?

@@ -11,6 +11,7 @@
 		A07D8DC729EC8B1F00685684 /* PlantUMLDiagramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A07D8DC629EC8B1F00685684 /* PlantUMLDiagramView.swift */; };
 		A07D8DC929EC8B2000685684 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A07D8DC829EC8B2000685684 /* Assets.xcassets */; };
 		A07D8DCC29EC8B2000685684 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A07D8DCB29EC8B2000685684 /* Preview Assets.xcassets */; };
+		A0F353DD29ED565B0015BB1C /* 01-basic in Resources */ = {isa = PBXBuildFile; fileRef = A0F353DC29ED565A0015BB1C /* 01-basic */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +20,7 @@
 		A07D8DC629EC8B1F00685684 /* PlantUMLDiagramView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlantUMLDiagramView.swift; sourceTree = "<group>"; };
 		A07D8DC829EC8B2000685684 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A07D8DCB29EC8B2000685684 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		A0F353DC29ED565A0015BB1C /* 01-basic */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "01-basic"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,6 +37,7 @@
 		A07D8DB829EC8B1F00685684 = {
 			isa = PBXGroup;
 			children = (
+				A0F353DC29ED565A0015BB1C /* 01-basic */,
 				A07D8DC329EC8B1F00685684 /* PlantUMLJSApp */,
 				A07D8DC229EC8B1F00685684 /* Products */,
 			);
@@ -127,6 +130,7 @@
 			files = (
 				A07D8DCC29EC8B2000685684 /* Preview Assets.xcassets in Resources */,
 				A07D8DC929EC8B2000685684 /* Assets.xcassets in Resources */,
+				A0F353DD29ED565B0015BB1C /* 01-basic in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

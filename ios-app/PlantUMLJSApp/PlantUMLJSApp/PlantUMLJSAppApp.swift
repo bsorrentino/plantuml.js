@@ -9,9 +9,14 @@ import SwiftUI
 
 @main
 struct PlantUMLJSAppApp: App {
+    
+    var url = {
+        return Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "01-basic")!
+    }()
+    
     var body: some Scene {
         WindowGroup {
-            PlantUMLDiagramView()
+            PlantUMLDiagramView( url: url)
         }
     }
 }
