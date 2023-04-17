@@ -94,15 +94,19 @@ extension PlantUMLDiagramView {
 extension PlantUMLDiagramView {
     
     fileprivate func loadFile( _ webView:WKWebView, from url: URL? ) {
+        
         guard let url, url.scheme == "file" else { return }
         
         let folderURL = url.deletingLastPathComponent()
+        
         webView.loadFileURL(url, allowingReadAccessTo: folderURL)
+        
     }
 
     fileprivate func loadHTMLString( _ webView:WKWebView, from url: URL? ) {
+        
         guard let url, url.scheme == "file" else { return }
-            
+        
         let folderURL = url.deletingLastPathComponent()
         
         print( "folderURL:\(folderURL)\nfolderPath:\(folderURL.relativePath)")
@@ -138,9 +142,12 @@ extension PlantUMLDiagramView {
         </body>
         </html>
         """
+        
         webView.loadHTMLString(indexHtml, baseURL: folderURL)
-
+    }
 }
+    
+    
 //struct PlantUMLScrollableDiagramView : View {
 //
 //    var url: URL?
