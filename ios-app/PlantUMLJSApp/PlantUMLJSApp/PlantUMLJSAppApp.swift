@@ -18,9 +18,21 @@ struct PlantUMLJSAppApp: App {
         URL(string: "https://bsorrentino.github.io/plantuml.js/01-basic/index.html")
     }()
     
+    @State var diagramText:String =
+    """
+    @startuml
+    title welcome
+    @enduml
+    """
+    
     var body: some Scene {
         WindowGroup {
-            PlantUMLDiagramView( url: url)
+            
+            VStack {
+                PlantUMLDiagramView( url: url, renderText: diagramText)
+                Divider()
+                TextEditor(text: $diagramText)
+            }
         }
     }
 }

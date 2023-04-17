@@ -8,6 +8,7 @@
 import SwiftUI
 import Combine
 import WebKit
+import OSLog
 
 class PlantUMLDiagramState: ObservableObject {
 
@@ -15,9 +16,11 @@ class PlantUMLDiagramState: ObservableObject {
     
     private var cancellabe:Cancellable?
     
+    var navigation: WKNavigation?
+    
     func subscribe( onUpdate update: @escaping ( URLRequest ) -> Void ) {
         
-        if self.cancellabe == nil  {
+        if self.cancellabe == nil {
             
             self.cancellabe = updateSubject
                 .removeDuplicates()
@@ -33,6 +36,9 @@ class PlantUMLDiagramState: ObservableObject {
     func requestUpdate( forURL url:URL ) {
         updateSubject.send( url )
     }
+
+    
+    
 }
 
 struct PlantUMLDiagramView: UIViewRepresentable {
@@ -40,19 +46,23 @@ struct PlantUMLDiagramView: UIViewRepresentable {
     @StateObject private var state = PlantUMLDiagramState()
     
     var url: URL?
- 
+    var renderText: String
+    
     func makeCoordinator() -> Coordinator {
-        Coordinator()
+        Coordinator( owner: self )
     }
     
     
     func makeUIView(context: Context) -> WKWebView {
         
         let webView = WKWebView()
+        
         webView.navigationDelegate = context.coordinator
         
         // [Load local web files & resources in WKWebView](https://stackoverflow.com/a/49638654/521197)
         state.subscribe( onUpdate: { request in
+            
+            os_log(.debug, "on update url")
             
             if let url = request.url, url.scheme == "file" {
             
@@ -60,7 +70,8 @@ struct PlantUMLDiagramView: UIViewRepresentable {
                 loadFile(webView, from: url)
             }
             else {
-                webView.load(request)
+                state.navigation = webView.load(request)
+                
             }
         })
                 
@@ -75,6 +86,9 @@ struct PlantUMLDiagramView: UIViewRepresentable {
         
         state.requestUpdate( forURL: url)
         
+        if let _ = state.navigation {
+            evaluateJS( webView )
+        }
     }
 }
 
@@ -82,17 +96,50 @@ extension PlantUMLDiagramView {
     
     class Coordinator : NSObject, WKNavigationDelegate {
         
+        private var owner: PlantUMLDiagramView
+        
+        init( owner: PlantUMLDiagramView ) {
+            self.owner = owner
+        }
+        
         func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse,
                      decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
 
             print( Self.self, #function)
             decisionHandler(.allow)
         }
+        
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+
+            print( Self.self, #function)
+            
+            if let nav = owner.state.navigation, nav == navigation {
+                owner.evaluateJS( webView )
+            }
+            
+        }
     }
 }
 
 extension PlantUMLDiagramView {
     
+    fileprivate func evaluateJS(_ webView: WKWebView ) {
+        
+        os_log(.debug, "start evaluating javascript")
+
+        webView.evaluateJavaScript(
+                                    """
+                                    _render(`\(renderText)`)
+                                    
+                                    """) { _, error in
+         
+            if let error {
+                os_log(.error, "error evaluating javascript \(error)")
+            }
+            
+        }
+
+    }
     fileprivate func loadFile( _ webView:WKWebView, from url: URL? ) {
         
         guard let url, url.scheme == "file" else { return }
@@ -162,6 +209,6 @@ extension PlantUMLDiagramView {
 
 struct PlantUMLDiagramView_Previews: PreviewProvider {
     static var previews: some View {
-        PlantUMLDiagramView()
+        PlantUMLDiagramView( renderText:"")
     }
 }
