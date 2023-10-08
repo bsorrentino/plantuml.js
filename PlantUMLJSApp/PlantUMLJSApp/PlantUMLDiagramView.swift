@@ -55,8 +55,11 @@ struct PlantUMLDiagramView: UIViewRepresentable {
     
     func makeUIView(context: Context) -> WKWebView {
         
-        let webView = WKWebView()
-        
+        let configs = WKWebViewConfiguration()
+        configs.setValue(true, forKey: "_allowUniversalAccessFromFileURLs")
+//        configs.setURLSchemeHandler(context.coordinator, forURLScheme: "file")
+        let webView = WKWebView(frame: .zero, configuration: configs)
+        webView.isInspectable = true
         webView.navigationDelegate = context.coordinator
         
         // [Load local web files & resources in WKWebView](https://stackoverflow.com/a/49638654/521197)
@@ -66,8 +69,8 @@ struct PlantUMLDiagramView: UIViewRepresentable {
             
             if let url = request.url, url.scheme == "file" {
             
-//                loadHTMLString(webView, from: url)
-                loadFile(webView, from: url)
+                loadHTMLString(webView, from: url)
+//                loadFile(webView, from: url)
             }
             else {
                 state.navigation = webView.load(request)
@@ -94,7 +97,7 @@ struct PlantUMLDiagramView: UIViewRepresentable {
 
 extension PlantUMLDiagramView {
     
-    class Coordinator : NSObject, WKNavigationDelegate {
+    class Coordinator : NSObject, WKNavigationDelegate, WKURLSchemeHandler {
         
         private var owner: PlantUMLDiagramView
         
@@ -102,13 +105,16 @@ extension PlantUMLDiagramView {
             self.owner = owner
         }
         
-        func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse,
-                     decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-
-            print( Self.self, #function)
-            decisionHandler(.allow)
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            
+            print( Self.self, #function )
+            
+            if let url = navigationAction.request.url {
+                print("Request URL: \(url)")
+            }
+            decisionHandler(.allow) // Allow the navigation to continue
         }
-        
+                
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
 
             print( Self.self, #function)
@@ -117,6 +123,27 @@ extension PlantUMLDiagramView {
                 owner.evaluateJS( webView )
             }
             
+        }
+        
+        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+            print( Self.self, #function, "Navigation failed with error: \(error)")
+            
+        }
+        
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            
+            print( Self.self, #function, "\(error)")
+            
+        }
+        
+        func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
+            
+            print( Self.self, #function)
+        }
+        
+        func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {
+            
+            print( Self.self, #function)
         }
     }
 }
@@ -144,9 +171,7 @@ extension PlantUMLDiagramView {
         
         guard let url, url.scheme == "file" else { return }
         
-        let folderURL = url.deletingLastPathComponent()
-        
-        webView.loadFileURL(url, allowingReadAccessTo: folderURL)
+        webView.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())
         
     }
 
@@ -174,7 +199,7 @@ extension PlantUMLDiagramView {
         <body>
         <img src="loading.png" id="plantuml-diagram" />
         <script type="text/javascript">
-            plantuml.initialize('/app/\(folderURL.relativePath)/node_modules/@sakirtemel/plantuml.js').then(() => {
+            plantuml.initialize( '\(folderURL.relativePath)', '/app/node_modules/@sakirtemel/plantuml.js').then(() => {
                 const element = document.getElementById('plantuml-diagram')
                 const pumlContent = `
                     @startuml

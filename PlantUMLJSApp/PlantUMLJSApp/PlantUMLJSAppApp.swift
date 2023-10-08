@@ -10,8 +10,8 @@ import SwiftUI
 @main
 struct PlantUMLJSAppApp: App {
     
-    var localUrlrl = {
-        return Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "01-basic")!
+    var localUrl = {
+        Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "www")!
     }()
     
     var url = {
@@ -29,7 +29,7 @@ struct PlantUMLJSAppApp: App {
         WindowGroup {
             
             VStack {
-                PlantUMLDiagramView( url: url, renderText: diagramText)
+                PlantUMLDiagramView( url: localUrl, renderText: diagramText)
                 Divider()
                 TextEditor(text: $diagramText)
             }
